@@ -14,8 +14,6 @@
 - `python/plot_stream_200hz.py`: manual-reference-labeled time plots (cannot claim synchronized rise times).
 - `python/demo.py`: synthetic demonstration. **Never submit synthetic metrics.**
 - `python/make_embedded_config.py`: writes real calibration into firmware header for automatic 200 Hz, no-host-compute assessment output.
-- `docs/明天Lab逐步执行.md`: numbered lab workflow.
-- `docs/达标与待验证.md`: rubric cross-check.
 
 ## IMPORTANT two separate speed limits
 
