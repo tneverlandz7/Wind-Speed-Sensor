@@ -1,0 +1,23 @@
+{
+  "file": "data/demo_SYNTHETIC_DO_NOT_SUBMIT.csv",
+  "zero_adc": 8837000.0,
+  "model": "v=beta*sqrt(max(0,sign*DeltaADC/rho))",
+  "beta": 0.21848437736195012,
+  "sign": -1,
+  "calibration": {
+    "n": 6,
+    "MSE_m2_s2": 0.0014487454136343286,
+    "RMSE_m_s": 0.038062388438382694,
+    "MAE_m_s": 0.034362057395507316,
+    "bias_m_s": -0.004110929792441764
+  },
+  "validation": {
+    "n": 4,
+    "MSE_m2_s2": 0.007874937612265416,
+    "RMSE_m_s": 0.08874084523073586,
+    "MAE_m_s": 0.06339897798806493,
+    "bias_m_s": 0.03415390084497216
+  },
+  "reference_assumption": "v=10 sqrt(deltaP/60); requires tunnel pressure-speed curve verification",
+  "uncertainty": "Reference pressure uncertainty and timestamp latency NOT corrected"
+}

@@ -1,0 +1,11 @@
+flowchart LR
+    A[Airflow 2–10 m/s] --> B[100 × 100 mm acrylic plate]
+    B --> C[3D printed mounter]
+    C --> D[Vertical 1 kg load cell]
+    D --> E[Weight I2C HX711 0x26]
+    T[MCP9808 0x18] --> F[STM32 Nucleo-F411RE]
+    E --> F
+    F --> G[Baseline + filtering]
+    G --> H[Wind-tunnel ADC-speed mapping]
+    H --> I[UART CSV logs]
+    I --> J[Python fits + PDF plots + uncertainty]

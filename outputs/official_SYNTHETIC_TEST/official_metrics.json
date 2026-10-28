@@ -1,0 +1,28 @@
+{
+  "note": "This comparison only valid if reference/device timestamps were independently aligned and reference values were measured, not inferred from manual knob annotations.",
+  "ref_time_offset_s": 0.0,
+  "overall": {
+    "n": 500,
+    "MSE_m2_s2": 0.014401080734974816,
+    "RMSE_m_s": 0.12000450297790835,
+    "MAE_m_s": 0.12000450286841995,
+    "bias_m_s": 0.12000450286841995,
+    "residual_sigma_m_s": 5.12622695314131e-06,
+    "mean_reference_variance_m2_s2": 0.002500000000000001,
+    "RMSE_adjusted_m_s": 0.12000450286841995,
+    "RMSE_adjusted_assumptions": "Independent errors and approximately unbiased reference"
+  },
+  "by_phase": {
+    "step": {
+      "n": 500,
+      "MSE_m2_s2": 0.014401080734974816,
+      "RMSE_m_s": 0.12000450297790835,
+      "MAE_m_s": 0.12000450286841995,
+      "bias_m_s": 0.12000450286841995,
+      "residual_sigma_m_s": 5.12622695314131e-06,
+      "mean_reference_variance_m2_s2": 0.002500000000000001,
+      "RMSE_adjusted_m_s": 0.12000450286841995,
+      "RMSE_adjusted_assumptions": "Independent errors and approximately unbiased reference"
+    }
+  }
+}
