@@ -11,6 +11,8 @@
 - `python/logger_200hz.py`: timestamps and logs real UART data and manual pressure labels; `p`/`v` arguments are in **Pa**, not m/s.
 - `python/check_200hz.py`: 200 Hz **line transfer** and sequence continuity test (`j` diagnostic mode, even before calibration).
 - `python/analyze.py`: stationary wind tunnel fit / calibration plots / validation metrics (for real runs, needs POINT records).
+- `python/calibrate_from_tunnel.py`: recommended offline calibration from tutorial reference CSV + raw sensor log + marked steady windows.
+- `python/calibration_model.py`: shared firmware-equivalent fitting and prediction, including the baseline noise deadband.
 - `python/plot_stream_200hz.py`: manual-reference-labeled time plots (cannot claim synchronized rise times).
 - `python/demo.py`: synthetic demonstration. **Never submit synthetic metrics.**
 - `python/make_embedded_config.py`: writes real calibration into firmware header for automatic 200 Hz, no-host-compute assessment output.
@@ -81,6 +83,127 @@ Your working wiring remains unchanged, after verifying **3.3 V SDA/SCL logic saf
    It updates both copies of `calibration_config.h` to set `COMP0219_AUTOSTART=1` with measured parameters. Recompile/reupload. On power-up, firmware emits **only 200 Hz numeric floats** (after its short initialization delay). Re-test while wind is off and at a known tunnel setting. For new calibration, restore the headers to `AUTOSTART 0` and upload again.
 
 ## Lab logging
+
+### Recommended: calibrate from the tutorial's measured reference speeds
+
+Use the installed **Wind Tunnel Logger** for the tunnel reference and this project's
+logger for raw Nucleo readings, **on the same laptop**. Keep the tutorial's student
+connection disconnected during calibration: only our logger opens the Nucleo port.
+The tutorial can save reference-only runs. Verify that reference data is arriving
+and saving before starting the full experiment. Do not use simulated ground truth.
+
+1. Warm up the system. Keep the plate, mounting and wind direction fixed. Start
+   `wind-tunnel-logger`, select the real ground-truth source and enter the actual
+   ambient pressure (Pa) and air temperature (C). With the fan OFF, let the tunnel
+   reference finish zeroing.
+2. In a separate terminal, start raw logging with a **new** output filename:
+
+   ```bash
+   python3 python/logger_200hz.py --port YOUR_PORT --output data/lab_run01.csv
+   ```
+
+   `YOUR_PORT` is the Nucleo's serial port (e.g. `COM7` on Windows or
+   `/dev/cu.usbmodem...` on macOS). Close Serial Monitor first. Keep the firmware
+   headers at `COMP0219_AUTOSTART 0` for this session. If it is streaming, send `x`
+   and wait for `STREAM_EXIT` so `LIVE` raw ADC and temperature readings resume.
+3. At our logger's `cmd>` prompt send `z`, with the fan OFF, and wait for the
+   `ZERO,ADC=...,SIGMA=...` response. Press **Start Logging** in the tutorial.
+   Run `z` only once in this recording; a new zero requires a new run.
+4. Set approximately 2 m/s, wait for airflow/plate readings to settle, then send:
+
+   ```text
+   begin cal speed_2
+   ```
+
+   Wait 10 seconds with steady airflow, then send `end`. Repeat at approximately
+   3, 4, 6, 8 and 10 m/s with unique labels such as `speed_3` and `speed_10`.
+   The label is a name, not a reference measurement: the importer reads the
+   actual measured speed from the tutorial CSV. No `p`/`v` commands are needed.
+5. Record separate held-out validation windows at approximately 2.5, 5, 7 and
+   9 m/s using `begin val check_2_5`, wait 10 seconds, then `end`, etc. Include
+   repeated settings and a decreasing-speed pass to check hysteresis. Validation
+   windows never contribute to the fitted coefficient. The importer requires at
+   least two usable calibration windows and one validation window.
+6. Press **Stop & Save** in the tutorial and send `stop` in our logger. Our logger
+   saves `data/lab_run01.csv` and `data/lab_run01_windows.csv`. Always send `end`
+   before stopping: unfinished windows are saved but rejected by the importer.
+7. Fit offline, supplying the **same ambient settings entered in the tutorial**:
+
+   ```bash
+   python3 python/calibrate_from_tunnel.py \
+     --sensor data/lab_run01.csv \
+     --reference "/path/to/team_date_time_vdas.csv" \
+     --windows data/lab_run01_windows.csv \
+     --ambient-pressure-pa 101325 \
+     --reference-temperature-c 20 \
+     --mounting-notes "Plate and load-cell mounting description" \
+     --firmware-version "Identifier of the firmware you uploaded" \
+     --out outputs/lab_run01
+   ```
+
+   Replace the pressure/temperature examples with your measured settings. Use a
+   **new** output directory. GIGA reference runs also use the reference `_vdas.csv`
+   export in the installed v1.0.0 implementation; inspect the files saved by your
+   version. The required columns are `timestamp_epoch` and `value_raw_mps`.
+8. Review `fig_plateaus.pdf` for settling, drift and unstable flow; review
+   `fig_calibration.pdf`, `fig_validation_error.pdf`, `windows_summary.csv` and
+   the held-out metrics in `model.json`. No automatic accuracy pass is assumed.
+   Baseline-noise calibration points are marked as excluded. Fix poor windows
+   or repeat the run before deployment.
+9. With the fan OFF, open a new logger session and restore:
+
+   ```bash
+   python3 python/logger_200hz.py --port YOUR_PORT \
+     --output data/post_calibration.csv \
+     --model-file outputs/lab_run01/calibration_restore.txt
+   ```
+
+   Send `load`, then `r`, then `q`, waiting for each response. `q` checks zero
+   drift without clearing the model. **Do not send `z` after loading**: it erases
+   the model. For autonomous assessment, generate the embedded headers:
+
+   ```bash
+   python3 python/make_embedded_config.py \
+     --model-file outputs/lab_run01/calibration_restore.txt
+   ```
+
+   Recompile/upload, close our logger, connect the Nucleo in the tutorial, and
+   record a fresh independent test. Embedded firmware automatically starts the
+   numeric 200 Hz output. Use the embedded model for this handoff: our logger's
+   `stop` exits streaming, and reconnecting may reset a RAM-only model. Run the
+   sequence diagnostic separately.
+
+The fitter averages raw ADC, sensor temperature and **unclipped reference speed**
+over the same marked steady intervals. It fits the firmware's square-root model
+and exports `k ZERO SIGMA SIGN BETA`. It uses the same sign selection and
+three-sigma noise deadband as firmware; the final calculations still run entirely
+on the Nucleo. No firmware algorithm changes are needed.
+
+Quality checks reject missing/nonfinite data, overlapping/unfinished windows,
+multiple zero baselines, backward clocks and simulated reference runs. Each window
+needs at least 10 raw sensor and 2 reference samples. Both streams must cover the
+window edges to within 1 second, with no internal gap greater than 1 second;
+`--max-gap-s` changes that limit if justified by the actual instrument cadence.
+Host clocks are shared, but transport delays are unmeasured: use this for steady
+calibration, not precise dynamic latency. Inspect the plateau plots even when all
+automated checks pass.
+
+The reference uses the tutorial's actual ambient settings. Our model deliberately
+keeps the firmware's **101325 Pa density convention** in both offline fitting and
+deployment. Beta absorbs a constant pressure difference during calibration;
+material atmospheric-pressure changes or mounting changes require recalibration.
+Temperature updates density, not load-cell thermal drift. Verify the MCP9808
+against a trusted thermometer separately. `model.json` records input and local
+firmware source hashes, ambient settings, mounting notes and the host repository
+revision. Supply `--firmware-version` to identify what you actually uploaded:
+the current serial protocol cannot verify which firmware is running on the board.
+
+For an optional direct on-board fit using a measured speed, our logger now accepts
+`speed-p 4.12` and `speed-v 5.00` in **m/s**. Legacy `p`/`v` commands below still
+take **Pa** and use the approximate conversion; prefer the measured-reference
+workflow above.
+
+### Legacy manual-pressure workflow
 
 ```bash
 python python/logger_200hz.py --port COM7 --output data/lab_run01.csv

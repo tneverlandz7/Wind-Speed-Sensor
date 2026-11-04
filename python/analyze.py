@@ -8,6 +8,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from calibration_model import density, fit_model, predict, score
 
 plt.rcParams.update({'font.size':9,'figure.dpi':140,'savefig.dpi':250,'axes.grid':True,'grid.alpha':0.25,'pdf.fonttype':42})
 
@@ -40,14 +41,22 @@ def baseline(df):
     if len(calm):return float(calm.raw_adc.median())
     raise ValueError('No ZERO message or no-wind baseline. Run z in still air.')
 
-def density(temp):return 101325.0/(287.05*(np.asarray(temp,dtype=float)+273.15))
+def baseline_sigma(df):
+    """Legacy logs without SIGMA retain their old zero-deadband behavior."""
+    sigma = 0.
+    for line in df[df.kind=='DEVICE'].raw_line.dropna():
+        if str(line).startswith('ZERO,'):
+            match = re.search(r'(?:^|,)SIGMA=([-+\d.eE]+)', str(line))
+            sigma = float(match[1]) if match else 0.
+    return sigma
 
-def predict(delta,rho,beta,sign):
-    return beta*np.sqrt(np.maximum(0.0,sign*np.asarray(delta,dtype=float)/np.asarray(rho,dtype=float)))
-
-def score(ref,pred):
-    err=np.asarray(pred)-np.asarray(ref)
-    return {'n':int(len(err)),'MSE_m2_s2':float(np.mean(err*err)),'RMSE_m_s':float(np.sqrt(np.mean(err*err))), 'MAE_m_s':float(np.mean(np.abs(err))), 'bias_m_s':float(np.mean(err))}
+def reference_values(frame):
+    pressure = pd.to_numeric(frame.pressure_pa, errors='coerce')
+    legacy = 10*np.sqrt(np.maximum(0., pressure)/60.)
+    if 'ref_mps' in frame:
+        measured = pd.to_numeric(frame.ref_mps, errors='coerce')
+        return measured.fillna(legacy).to_numpy()
+    return legacy.to_numpy()
 
 def plot_one(x,series,path,title,xlabel='Time (s)',ylabel='Airspeed (m/s)',ylim=None):
     fig,ax=plt.subplots(figsize=(7.1,3.1))
@@ -62,18 +71,15 @@ def main(file,out):
     needed={'kind','raw_line','host_elapsed_s','pressure_pa','raw_adc','temperature_c','phase'}
     if not needed.issubset(set(df.columns)):raise ValueError('Input is not a logger.py CSV; missing '+str(needed-set(df.columns)))
     z=baseline(df)
+    sigma=baseline_sigma(df)
     points=extract_points(df)
     if points.empty:raise ValueError('No POINT rows found; finish at least two p <Pa> captures.')
     points['rho']=density(points.TEMP_C)
     cal=points[points.group=='cal'].copy()
     val=points[points.group=='val'].copy()
     if len(cal)<2:raise ValueError('Need >=2 valid calibration POINT rows before fitting')
-    sign=1 if cal.loc[cal.DELTA_ADC.abs().idxmax(),'DELTA_ADC']>=0 else -1
-    x=np.sqrt(np.maximum(0,sign*cal.DELTA_ADC.values/cal.rho.values))
-    if (x>0).sum()<2:raise ValueError('ADC sign or baseline incorrect; fewer than 2 positive calibrations')
-    beta=float(np.dot(x,cal.REF_MPS)/np.dot(x,x))
-    if not np.isfinite(beta) or beta<=0:raise ValueError('Fitting failed')
-    points['predicted_mps']=predict(points.DELTA_ADC,points.rho,beta,sign)
+    beta,sign,_=fit_model(cal.DELTA_ADC,cal.rho,cal.REF_MPS,sigma)
+    points['predicted_mps']=predict(points.DELTA_ADC,points.rho,beta,sign,sigma)
     points['error_mps']=points.predicted_mps-points.REF_MPS
     points.to_csv(out/'points_with_predictions.csv',index=False)
     cal=points[points.group=='cal'];val=points[points.group=='val']
@@ -104,8 +110,8 @@ def main(file,out):
     live=df[df.kind=='LIVE'].copy()
     live=live[pd.to_numeric(live.raw_adc,errors='coerce').notna() & pd.to_numeric(live.temperature_c,errors='coerce').notna()].copy()
     if len(live):
-        live['predicted_offline_mps']=predict(live.raw_adc-z,density(live.temperature_c),beta,sign)
-        live['reference_mps']=10*np.sqrt(np.maximum(0,live.pressure_pa.fillna(0).astype(float))/60.0)
+        live['predicted_offline_mps']=predict(live.raw_adc-z,density(live.temperature_c),beta,sign,sigma)
+        live['reference_mps']=reference_values(live)
         live['time_s']=live.host_elapsed_s.astype(float)
         live.to_csv(out/'timeseries_predictions.csv',index=False)
         plot_one(live.time_s,[(live.reference_mps,'Reference (manually annotated)'),(live.predicted_offline_mps,'Estimated')],out/'fig_timeseries_all.pdf','Recorded time-series (check reference synchronization)')
