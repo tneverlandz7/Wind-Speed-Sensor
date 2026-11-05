@@ -24,9 +24,13 @@ int main() {
     setup();
     if (speedSerial.baud != 115200 || !speedSerial.values.empty()) return 1;
     if (predictWindSpeed(ZERO_ADC, 20.0f) != 0.0f) return 2;
-    if (predictWindSpeed(ZERO_ADC + 1000.0f, 20.0f) != 0.0f) return 3;
-    if (predictWindSpeed(ZERO_ADC - 85.5f, 20.0f) != 0.0f) return 4;
+    if (predictWindSpeed(ZERO_ADC - WIND_SIGN * 1000.0f, 20.0f) != 0.0f) return 3;
+    if (predictWindSpeed(ZERO_ADC + WIND_SIGN * 2.5f * ZERO_SIGMA_ADC, 20.0f) != 0.0f) return 4;
     float check = predictWindSpeed(8810423.9036f, 20.46024f);
+    // Read constants from the compiled sketch, so changing calibration does not
+    // leave the Python comparison pinned to a previous run's beta/baseline.
+    std::cout << std::setprecision(9) << ZERO_ADC << ',' << ZERO_SIGMA_ADC << ','
+              << WIND_SIGN << ',' << BETA << '\n';
     std::cout << std::setprecision(9) << check << '\n';
     for (int i = 0; i < 10000; ++i) {
         fakeUs += 100;

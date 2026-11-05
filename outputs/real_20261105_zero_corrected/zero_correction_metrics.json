@@ -1,0 +1,65 @@
+{
+  "zero_anchor_mps": 1.442,
+  "anchor_basis": "User confirmed the initial 1.442 m/s reading was no wind.",
+  "formula": "sqrt(max(0, reported_speed^2 - zero_anchor^2))",
+  "assumption": "Approximate constant air density; temperature was not recorded in these exports.",
+  "scope": "Offline baseline correction only; beta and EMA unchanged. Values at/below anchor become zero.",
+  "comparison_note": "Errors use the existing nearest-sample aligned CSV; no transport-delay correction or new time alignment is inferred.",
+  "inputs": {
+    "aligned": {
+      "path": "/Users/thun/Documents/Wind Tunnel Logger/logs/T4-real_20261105_094647_aligned.csv",
+      "sha256": "53cebb95f89d8b55b22079cd63677f6f9d4b1cebeef5a2d7e37c67d5d83a47dd"
+    },
+    "student": {
+      "path": "/Users/thun/Documents/Wind Tunnel Logger/logs/T4-real_20261105_094647_student.csv",
+      "sha256": "214d4b6b5817943c3d0c632ae58ee382c0fdfce23ea211bf409167729296f8c0"
+    },
+    "reference": {
+      "path": "/Users/thun/Documents/Wind Tunnel Logger/logs/T4-real_20261105_094647_vdas.csv",
+      "sha256": "70243b5ec918618d8011a21fba3fd652a0038348988d1fdecfa2630f6eb84958"
+    }
+  },
+  "student_samples": 13374,
+  "overall": {
+    "mean_reference_mps": 6.604874955223881,
+    "mean_original_mps": 7.699701492537313,
+    "mean_corrected_mps": 7.498343258090227,
+    "original": {
+      "n": 268,
+      "MSE_m2_s2": 1.4202332126718578,
+      "RMSE_m_s": 1.1917353786272595,
+      "MAE_m_s": 1.0948265373134327,
+      "bias_m_s": 1.0948265373134327
+    },
+    "corrected": {
+      "n": 268,
+      "MSE_m2_s2": 0.9829144764199222,
+      "RMSE_m_s": 0.9914204337312814,
+      "MAE_m_s": 0.9087661915444407,
+      "bias_m_s": 0.8934683028663463
+    }
+  },
+  "steady_range_s": [
+    42.0,
+    60.0
+  ],
+  "steady": {
+    "mean_reference_mps": 8.310401291666668,
+    "mean_original_mps": 9.350722222222222,
+    "mean_corrected_mps": 9.238859705071237,
+    "original": {
+      "n": 72,
+      "MSE_m2_s2": 1.0875388685588459,
+      "RMSE_m_s": 1.042851316611743,
+      "MAE_m_s": 1.040320930555555,
+      "bias_m_s": 1.040320930555555
+    },
+    "corrected": {
+      "n": 72,
+      "MSE_m2_s2": 0.8673574861603943,
+      "RMSE_m_s": 0.9313202919299001,
+      "MAE_m_s": 0.9284584134045691,
+      "bias_m_s": 0.9284584134045691
+    }
+  }
+}

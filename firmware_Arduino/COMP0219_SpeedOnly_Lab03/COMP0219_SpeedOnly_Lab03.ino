@@ -21,7 +21,7 @@
 
 
 // FOR Real!
-const float ZERO_ADC = 8840126.0f;
+const float ZERO_ADC = 8837482.0f;
 const float ZERO_SIGMA_ADC = 29.83f;
 const int WIND_SIGN = -1;
 const float BETA = 0.03077113727f;
