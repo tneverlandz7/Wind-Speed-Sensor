@@ -1,0 +1,67 @@
+{
+  "zero_adc": 8840126.0,
+  "zero_sigma_adc": 29.83,
+  "sign": -1,
+  "beta": 0.03077113727274092,
+  "reference_source": "assumed_window_means",
+  "metrics_interpretation": "Agreement with assumed speeds only; not measured accuracy against tunnel ground truth.",
+  "model": "v=beta*sqrt(max(0,sign*(ADC-zero)/rho)); zero if sign*(ADC-zero)<=3*sigma",
+  "density_convention_pa": 101325.0,
+  "max_gap_s": 1.0,
+  "reference_range_mps": [
+    2.0,
+    10.0
+  ],
+  "reference_settings": null,
+  "mounting_notes": "",
+  "git_revision": "fab70a0bfbe2a9292e1468f95607454dd12ebae1",
+  "firmware_version": "not supplied",
+  "firmware_provenance_note": "Version is user-supplied. Host checkout revision/source hashes do not establish what is flashed on the board.",
+  "local_firmware_sources": [
+    {
+      "path": "/Users/thun/Wind-Speed-Sensor/firmware/src/main.cpp",
+      "sha256": "d028510d20c7a39ba9b1fa324071550c50bf394798de35f98963a04aee7f516b"
+    },
+    {
+      "path": "/Users/thun/Wind-Speed-Sensor/firmware/src/calibration_config.h",
+      "sha256": "a427202a2470236e464ac3e7ffd12f537257a2d4a6e06d74968a618c9a872c63"
+    },
+    {
+      "path": "/Users/thun/Wind-Speed-Sensor/firmware_Arduino/COMP0219_Stage1/COMP0219_Stage1.ino",
+      "sha256": "8d578310c9b1523fc3281704d58bf78a30710ad6b05b0d800b61f3a2665fbff6"
+    },
+    {
+      "path": "/Users/thun/Wind-Speed-Sensor/firmware_Arduino/COMP0219_Stage1/calibration_config.h",
+      "sha256": "a427202a2470236e464ac3e7ffd12f537257a2d4a6e06d74968a618c9a872c63"
+    }
+  ],
+  "inputs": {
+    "sensor": {
+      "path": "/Users/thun/Wind-Speed-Sensor/data/lab_run06.csv",
+      "sha256": "6d61347d68d6bf45b62c02c31ef5b931f0940b578634707f3df5341f05bd7b6d"
+    },
+    "windows": {
+      "path": "/Users/thun/Wind-Speed-Sensor/data/lab_run06_windows.csv",
+      "sha256": "3025f50265e627c331c5e9da94ad910de04c208c5f9f3112c2850807f4d0b582"
+    },
+    "assumed_speeds": {
+      "path": "/Users/thun/Wind-Speed-Sensor/data/lab_run06_assumed_speeds.csv",
+      "sha256": "ab25fead06e652c42b69471a4c266cdfb47c262227e4922a6423b982209c1fb3"
+    }
+  },
+  "calibration": {
+    "n": 3,
+    "MSE_m2_s2": 0.0358691145749506,
+    "RMSE_m_s": 0.18939143215824364,
+    "MAE_m_s": 0.1660775057094638,
+    "bias_m_s": -0.04216848271328111
+  },
+  "validation": {
+    "n": 1,
+    "MSE_m2_s2": 0.23695618030000545,
+    "RMSE_m_s": 0.4867814502423089,
+    "MAE_m_s": 0.4867814502423089,
+    "bias_m_s": -0.4867814502423089
+  },
+  "limitations": "Agreement with assumed speeds only; not measured accuracy against tunnel ground truth. Steady-window averages only; inspect plateau stability. Host timestamps do not establish dynamic latency. Recalibrate after mounting or material ambient pressure changes."
+}

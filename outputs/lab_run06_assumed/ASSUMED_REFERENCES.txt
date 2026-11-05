@@ -1,0 +1,2 @@
+Agreement with assumed speeds only; not measured accuracy against tunnel ground truth.
+No wind tunnel reference recording was supplied. Reference means came from the explicit assumed-speed mapping.

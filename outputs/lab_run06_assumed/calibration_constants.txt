@@ -1,0 +1,5 @@
+// Agreement with assumed speeds only; not measured accuracy against tunnel ground truth.
+const float ZERO_ADC = 8840126.0000f;
+const float ZERO_SIGMA_ADC = 29.8300f;
+const int WIND_SIGN = -1;
+const float BETA = 3.077113727e-02f;

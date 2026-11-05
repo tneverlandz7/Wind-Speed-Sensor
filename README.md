@@ -7,6 +7,7 @@
 ## Files
 
 - `firmware_Arduino/COMP0219_Stage1/COMP0219_Stage1.ino` (+ `calibration_config.h`): Arduino IDE version.
+- `firmware_Arduino/COMP0219_SpeedOnly_Lab03/COMP0219_SpeedOnly_Lab03.ino`: standalone numeric-output test sketch with the lab_run03 calibration embedded. Its validation error is approximately 1.75 m/s; investigate accuracy before assessment use.
 - `firmware/` (`platformio.ini`, `src/main.cpp`, `src/calibration_config.h`): optional VS Code/PlatformIO build.
 - `python/logger_200hz.py`: timestamps and logs real UART data and manual pressure labels; `p`/`v` arguments are in **Pa**, not m/s.
 - `python/check_200hz.py`: 200 Hz **line transfer** and sequence continuity test (`j` diagnostic mode, even before calibration).
@@ -54,6 +55,19 @@ Your working wiring remains unchanged, after verifying **3.3 V SDA/SCL logic saf
 5. You can verify Python plotting separately with `python python/demo.py --output data/demo_SYNTHETIC_DO_NOT_SUBMIT.csv` and `python python/analyze.py --input data/demo_SYNTHETIC_DO_NOT_SUBMIT.csv --out outputs/demo`.
 
 ## Firmware modes and commands
+
+For a standalone test of the current lab_run03 prediction, open
+`firmware_Arduino/COMP0219_SpeedOnly_Lab03/COMP0219_SpeedOnly_Lab03.ino` in Arduino
+IDE, select Nucleo-F411RE and upload. Its folder name matches its sketch name;
+keep it separate from the Stage1 sketch. It needs no `calibration_config.h` or
+serial commands: after initialization it prints one speed in m/s per line at a
+scheduled 200 Hz, 115200 baud. Close Serial Monitor before connecting the board
+in Wind Tunnel Logger. Calibration parameters are constants near the top of the
+new sketch; regenerating Stage1's headers does not update this standalone copy.
+This is the current experimental fit (reference 2.926 m/s predicted 4.674 m/s),
+not evidence of acceptable accuracy. Like Stage1, missing initial sensor reads
+produce numeric zero, and failed later reads hold the last successful reading.
+Check actual sensor operation and hardware output rate separately.
 
 | Firmware command | Function | Output |
 | --- | --- | --- |
@@ -150,6 +164,13 @@ and saving before starting the full experiment. Do not use simulated ground trut
    the held-out metrics in `model.json`. No automatic accuracy pass is assumed.
    Baseline-noise calibration points are marked as excluded. Fix poor windows
    or repeat the run before deployment.
+
+   Reference window means are accepted within 2..10 m/s by default. A measured
+   edge setting may sit slightly outside that range: for example, explicitly add
+   `--min-reference-mps 1.9` to accept a 1.97 m/s window. The fitter keeps 1.97 as
+   measured; it does not round or clamp it to 2. The optional
+   `--max-reference-mps` sets the upper limit. Both bounds are stored in
+   `model.json`; broadening them does not demonstrate accuracy across 2..10 m/s.
 9. With the fan OFF, open a new logger session and restore:
 
    ```bash
@@ -203,7 +224,38 @@ For an optional direct on-board fit using a measured speed, our logger now accep
 take **Pa** and use the approximate conversion; prefer the measured-reference
 workflow above.
 
-### Legacy manual-pressure workflow
+### Provisional calibration when the tunnel reference recording is missing
+
+An explicit assumed-speed mapping can replace the recorded reference for a
+provisional fit. It contains exactly one `name,assumed_mps` row for every window.
+For lab_run06, `data/lab_run06_assumed_speeds.csv` maps speed_10/8/6/4 to
+10/8/6/4 m/s. The original window file controls which points are `cal` and `val`.
+
+```bash
+python3 python/calibrate_from_tunnel.py \
+  --sensor data/lab_run06.csv \
+  --windows data/lab_run06_windows.csv \
+  --assumed-speeds data/lab_run06_assumed_speeds.csv \
+  --out outputs/lab_run06_assumed
+```
+
+Use a new output folder on reruns. `--assumed-speeds` and `--reference` cannot be
+combined. No reference ambient settings are needed in assumed mode: density
+still uses the measured sensor temperature and the same 101325 Pa firmware
+convention. Sensor baseline, window coverage, sample count and noise checks
+still apply. The script does not infer speeds from names or invent timestamped
+reference samples. Missing/extra/duplicate mapping names fail explicitly.
+
+Plots, summaries and `model.json` identify the assumed source. In particular,
+reference counts are zero and unknown reference variability/coverage are blank.
+`ASSUMED_REFERENCES.txt` records the limitation. The held-out result measures
+agreement with the assumed speed, not independently measured tunnel accuracy.
+`calibration_constants.txt` contains the four constants for the standalone
+speed-only sketch; `calibration_restore.txt` supports the existing load/header
+workflow. Review results before updating firmware. Keep the assumption label
+with any model or plots used in the report.
+
+### Legacy manual-pressure commands
 
 ```bash
 python python/logger_200hz.py --port COM7 --output data/lab_run01.csv

@@ -1,0 +1,69 @@
+{
+  "zero_adc": 8840017.0,
+  "zero_sigma_adc": 28.57,
+  "sign": -1,
+  "beta": 0.02978967021948395,
+  "model": "v=beta*sqrt(max(0,sign*(ADC-zero)/rho)); zero if sign*(ADC-zero)<=3*sigma",
+  "density_convention_pa": 101325.0,
+  "max_gap_s": 1.0,
+  "reference_range_mps": [
+    1.9,
+    10.0
+  ],
+  "reference_settings": {
+    "ambient_pressure_pa": 101325.0,
+    "temperature_c": 20.0,
+    "note": "User-supplied tutorial settings; reference speeds are read directly from CSV"
+  },
+  "mounting_notes": "",
+  "git_revision": "fab70a0bfbe2a9292e1468f95607454dd12ebae1",
+  "firmware_version": "not supplied",
+  "firmware_provenance_note": "Version is user-supplied. Host checkout revision/source hashes do not establish what is flashed on the board.",
+  "local_firmware_sources": [
+    {
+      "path": "/Users/thun/Wind-Speed-Sensor/firmware/src/main.cpp",
+      "sha256": "d028510d20c7a39ba9b1fa324071550c50bf394798de35f98963a04aee7f516b"
+    },
+    {
+      "path": "/Users/thun/Wind-Speed-Sensor/firmware/src/calibration_config.h",
+      "sha256": "a427202a2470236e464ac3e7ffd12f537257a2d4a6e06d74968a618c9a872c63"
+    },
+    {
+      "path": "/Users/thun/Wind-Speed-Sensor/firmware_Arduino/COMP0219_Stage1/COMP0219_Stage1.ino",
+      "sha256": "8d578310c9b1523fc3281704d58bf78a30710ad6b05b0d800b61f3a2665fbff6"
+    },
+    {
+      "path": "/Users/thun/Wind-Speed-Sensor/firmware_Arduino/COMP0219_Stage1/calibration_config.h",
+      "sha256": "a427202a2470236e464ac3e7ffd12f537257a2d4a6e06d74968a618c9a872c63"
+    }
+  ],
+  "inputs": {
+    "sensor": {
+      "path": "/Users/thun/Wind-Speed-Sensor/data/lab_run03.csv",
+      "sha256": "c55be40529abe6914e90cd5f9d189bf1242009940a099b60ff8e3f213e4873bd"
+    },
+    "reference": {
+      "path": "/Users/thun/Wind-Speed-Sensor/data/T4_20261104_155058_giga_vdas.csv",
+      "sha256": "64d12bf76d8c6284f84f3f2e9bc0aef611b23136a45c8d3e695193e12d958deb"
+    },
+    "windows": {
+      "path": "/Users/thun/Wind-Speed-Sensor/data/lab_run03_windows.csv",
+      "sha256": "e911196c5a9999f18f0a873c81a2ae46e99eaa1c5f5a2bda27f69ce6b9f84be7"
+    }
+  },
+  "calibration": {
+    "n": 2,
+    "MSE_m2_s2": 0.9051683929781467,
+    "RMSE_m_s": 0.9514033807897398,
+    "MAE_m_s": 0.9313281586789495,
+    "bias_m_s": 0.19441258660339922
+  },
+  "validation": {
+    "n": 1,
+    "MSE_m2_s2": 3.054582361901102,
+    "RMSE_m_s": 1.7477363536589556,
+    "MAE_m_s": 1.7477363536589556,
+    "bias_m_s": 1.7477363536589556
+  },
+  "limitations": "Steady-window averages only; inspect plateau stability. Host timestamps do not establish dynamic latency. Recalibrate after mounting or material ambient pressure changes."
+}

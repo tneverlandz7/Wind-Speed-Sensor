@@ -15,6 +15,18 @@ from make_embedded_config import from_line
 
 
 class ModelTests(unittest.TestCase):
+    def test_reference_range_override_preserves_actual_speed(self):
+        speeds = np.array([1.9675, 5.5])
+        delta = (speeds/.2)**2
+        with self.assertRaises(ValueError):
+            fit_model(delta, np.ones(2), speeds, 1.)
+        beta, sign, _ = fit_model(delta, np.ones(2), speeds, 1., min_reference_mps=1.9)
+        self.assertAlmostEqual(beta, .2)
+        np.testing.assert_allclose(predict(delta, 1., beta, sign, 1.), speeds)
+        for low, high in [(0, 10), (-1, 10), (2, 2), (11, 10), (float('nan'), 10), (2, float('inf'))]:
+            with self.assertRaises(ValueError):
+                fit_model(delta, np.ones(2), speeds, 1., min_reference_mps=low, max_reference_mps=high)
+
     def test_fit_both_signs_and_noise_deadband(self):
         for sign in (1, -1):
             delta = sign * np.array([1., 100., 400.])
@@ -55,9 +67,9 @@ class TunnelTests(unittest.TestCase):
         pd.DataFrame(reference).to_csv(self.reference, index=False)
         pd.DataFrame(windows).to_csv(self.windows, index=False)
 
-    def run_fit(self, out=None):
+    def run_fit(self, out=None, **kwargs):
         return calibrate(self.sensor, self.reference, self.windows, out=out,
-                         ambient_pressure_pa=100000., reference_temperature_c=20.)
+                         ambient_pressure_pa=100000., reference_temperature_c=20., **kwargs)
 
     def edit(self, path, fn):
         df = pd.read_csv(path)
@@ -87,11 +99,27 @@ class TunnelTests(unittest.TestCase):
         self.assertEqual(model['beta'], original['beta'])
         self.assertGreater(model['validation']['RMSE_m_s'], 1)
 
+    def test_near_boundary_window_requires_explicit_range(self):
+        self.edit(self.reference, lambda df: df.assign(value_raw_mps=np.where(df.timestamp_epoch < self.epoch+20, 1.9675, df.value_raw_mps)))
+        self.edit(self.sensor, lambda df: df.assign(raw_adc=np.where((df.kind == 'LIVE') & (df.host_epoch_s < self.epoch+20),
+                                                                  1000+float(density(20))*(1.9675/.2)**2, df.raw_adc)))
+        with self.assertRaisesRegex(ValueError, 'reference speed'):
+            self.run_fit()
+        model, summary = self.run_fit(min_reference_mps=1.9)
+        self.assertAlmostEqual(summary.iloc[0].reference_mps, 1.9675)
+        self.assertAlmostEqual(model['beta'], .2)
+        self.assertEqual(model['reference_range_mps'], [1.9, 10.])
+        with self.assertRaises(ValueError):
+            self.run_fit(min_reference_mps=0)
+        with self.assertRaises(ValueError):
+            self.run_fit(min_reference_mps=2, max_reference_mps=2)
+
     def test_command_line_export_and_failed_rerun(self):
         out = self.root/'cli_out'
         command = [sys.executable, str(Path(__file__).resolve().parents[1]/'python/calibrate_from_tunnel.py'),
                    '--sensor', str(self.sensor), '--reference', str(self.reference), '--windows', str(self.windows),
                    '--ambient-pressure-pa', '100000', '--reference-temperature-c', '20',
+                   '--min-reference-mps', '1.9',
                    '--firmware-version', 'test-fixture-only', '--out', str(out)]
         result = subprocess.run(command, capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -99,6 +127,7 @@ class TunnelTests(unittest.TestCase):
         from_line((out/'calibration_restore.txt').read_text())
         metadata = json.loads((out/'model.json').read_text())
         self.assertEqual(metadata['firmware_version'], 'test-fixture-only')
+        self.assertEqual(metadata['reference_range_mps'], [1.9, 10.])
         self.assertEqual(len(metadata['local_firmware_sources']), 4)
         result = subprocess.run(command, capture_output=True, text=True)
         self.assertEqual(result.returncode, 2)

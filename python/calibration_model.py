@@ -23,13 +23,20 @@ def predict(delta, rho, beta, sign, zero_sigma=0.):
     return np.where(signed <= 3 * zero_sigma, 0., beta * np.sqrt(np.maximum(0., signed / rho)))
 
 
-def fit_model(delta, rho, reference, zero_sigma):
+def validate_reference_range(min_reference_mps, max_reference_mps):
+    if (not np.isfinite([min_reference_mps, max_reference_mps]).all()
+            or not 0 < min_reference_mps < max_reference_mps):
+        raise ValueError('Reference limits must be finite, positive, with minimum below maximum')
+
+
+def fit_model(delta, rho, reference, zero_sigma, *, min_reference_mps=2., max_reference_mps=10.):
+    validate_reference_range(min_reference_mps, max_reference_mps)
     delta, rho, reference = (np.asarray(a, dtype=float) for a in (delta, rho, reference))
     if (delta.ndim != 1 or delta.shape != rho.shape or delta.shape != reference.shape
             or len(delta) < 2 or not all(np.isfinite(a).all() for a in (delta, rho, reference))
-            or (rho <= 0).any() or (reference < 2).any() or (reference > 10).any()
+            or (rho <= 0).any() or (reference < min_reference_mps).any() or (reference > max_reference_mps).any()
             or not np.isfinite(zero_sigma) or zero_sigma < 0):
-        raise ValueError('Need >=2 finite calibration points within 2..10 m/s and valid density/noise')
+        raise ValueError(f'Need >=2 finite calibration points within {min_reference_mps:g}..{max_reference_mps:g} m/s and valid density/noise')
     sign = 1 if delta[np.argmax(np.abs(delta))] >= 0 else -1
     useful = sign * delta > 3 * zero_sigma
     if useful.sum() < 2:
