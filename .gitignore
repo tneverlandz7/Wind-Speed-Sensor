@@ -1,2 +1,10 @@
 __pycache__/
 *.py[cod]
+.venv/
+venv/
+.pio/
+.pytest_cache/
+*.o
+*.exe
+.DS_Store
+Thumbs.db

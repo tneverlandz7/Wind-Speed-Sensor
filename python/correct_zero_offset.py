@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 
 from calibration_model import score
-from calibrate_from_tunnel import read_csv, numeric, check_clock, provenance
+from calibrate_sensor import read_csv, numeric, check_clock, provenance
 
 
 def correct_speeds(speeds, zero_speed):

@@ -660,7 +660,7 @@ void loop() {
     Serial.println("LIVE,ADC_TIMEOUT");
     return;
   }
-  float tempC;                                                                                                                                                                                                                      
+  float tempC;
   bool tempOK = readTempC(tempC);
   if (!emaValid) { emaADC = (float)raw; emaValid = true; }
   else emaADC += EMA_ALPHA * ((float)raw - emaADC);

@@ -6,21 +6,15 @@
 
 // Standalone Nucleo-F411RE sketch: one speed in m/s per line, 115200 baud.
 // Starts automatically; no commands, prompts, headers, units or diagnostics.
-// Wiring matches Stage1: PB9 SDA, PB8 SCL; Weight-I2C 0x26; MCP9808 0x18.
-// Calibration source: outputs/lab_run03/calibration_restore.txt, 2026-11-04.
-// k 8840017 28.57 -1 0.0297896702
-// TEST CALIBRATION: held-out reference 2.926 m/s -> predicted 4.674 m/s.
-// Keep the same plate/mounting/direction. Accuracy needs investigation.
+// Wiring matches wind_sensor: PB9 SDA, PB8 SCL; Weight-I2C 0x26; MCP9808 0x18.
+// Experimental parameters preserved from the original repository:
+// beta/sign/noise match results/lab_run06_assumed/model.json (assumed speeds).
+// ZERO_ADC is a manual override: 8837482, versus the model baseline 8840126.
+// The repository does not document a measurement supporting this override.
+// These constants are separate from calibration_config.h and its generator.
+// Recalibrate and verify accuracy before assessment use.
 // 200 Hz is the output cadence, not 200 independent load measurements/second.
 
-// FOR Wooden
-// const float ZERO_ADC = 8840017.0f;
-// const float ZERO_SIGMA_ADC = 28.57f;
-// const int WIND_SIGN = -1;
-// const float BETA = 0.0297896702f;
-
-
-// FOR Real!
 const float ZERO_ADC = 8837482.0f;
 const float ZERO_SIGMA_ADC = 29.83f;
 const int WIND_SIGN = -1;
@@ -113,7 +107,7 @@ void loop() {
     return;
   }
 
-  // Same scheduling/filtering as Stage1: output takes priority over I2C polls.
+  // Same scheduling/filtering as wind_sensor: output takes priority over I2C polls.
   if ((int32_t)(nextOutputUs - now) < 2200) return;
   if ((int32_t)(now - nextADCUs) >= 0) {
     int32_t raw;
@@ -125,7 +119,7 @@ void loop() {
         filteredADC += EMA_ALPHA * ((float)raw - filteredADC);
       }
     }
-    // As in Stage1, a failed read holds the last successful measurement.
+    // As in wind_sensor, a failed read holds the last successful measurement.
     nextADCUs += ADC_PERIOD_US;
     if ((int32_t)(micros() - nextADCUs) >= 0)
       nextADCUs = micros() + ADC_PERIOD_US;

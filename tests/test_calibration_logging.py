@@ -8,8 +8,8 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'python'))
-from logger_200hz import WindowRecorder, host_timestamp, direct_speed_command
-import logger_200hz
+from log_serial import WindowRecorder, host_timestamp, direct_speed_command
+import log_serial
 
 
 class InlineThread:
@@ -64,11 +64,11 @@ class LoggingTests(unittest.TestCase):
     def run_logger(self, commands, out):
         serial = MagicMock()
         serial.__enter__.return_value = serial
-        with patch.object(logger_200hz.serial, 'Serial', return_value=serial), \
-             patch.object(logger_200hz.threading, 'Thread', InlineThread), \
+        with patch.object(log_serial.serial, 'Serial', return_value=serial), \
+             patch.object(log_serial.threading, 'Thread', InlineThread), \
              patch('builtins.input', side_effect=[*commands, EOFError()]), \
              patch('builtins.print'):
-            logger_200hz.main('FAKE_PORT', 115200, out)
+            log_serial.main('FAKE_PORT', 115200, out)
         return serial
 
     def test_direct_speed_record_retains_measured_reference(self):
@@ -105,10 +105,10 @@ class LoggingTests(unittest.TestCase):
                 return (b'ZERO,ADC=1000,SIGMA=1,TEMP_C=20,N=50\n'
                         b'LIVE,Device_ms=6000,Temp_C=20,Raw_ADC=1100,Delta_ADC=100,Wind=NOT_READY\n')
             serial.read.side_effect = receive
-            with patch.object(logger_200hz.serial, 'Serial', return_value=serial), \
-                 patch.object(logger_200hz.threading, 'Thread'), \
-                 patch.object(logger_200hz.queue, 'Queue', return_value=commands), patch('builtins.print'):
-                logger_200hz.main('FAKE_PORT', 115200, out)
+            with patch.object(log_serial.serial, 'Serial', return_value=serial), \
+                 patch.object(log_serial.threading, 'Thread'), \
+                 patch.object(log_serial.queue, 'Queue', return_value=commands), patch('builtins.print'):
+                log_serial.main('FAKE_PORT', 115200, out)
             rows = list(csv.DictReader(io.StringIO(out.read_text())))
             live = next(row for row in rows if row['kind'] == 'LIVE')
             self.assertEqual(float(live['raw_adc']), 1100.)

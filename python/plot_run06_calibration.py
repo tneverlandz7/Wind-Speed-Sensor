@@ -10,11 +10,11 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/'python'))
 from calibration_model import density, predict
 
-model = json.loads((ROOT/'outputs/lab_run06_assumed/model.json').read_text())
+model = json.loads((ROOT/'results/lab_run06_assumed/model.json').read_text())
 paths = {'sensor': ROOT/'data/lab_run06.csv', 'windows': ROOT/'data/lab_run06_windows.csv',
          'assumed_speeds': ROOT/'data/lab_run06_assumed_speeds.csv'}
 for name, path in paths.items():
@@ -37,7 +37,7 @@ for _, window in windows.iterrows():
     mask = live.host_epoch_s.between(window.start_epoch, window.end_epoch, inclusive='left')
     live.loc[mask, 'window'] = window['name']
     live.loc[mask, 'assumed_mps'] = assumptions[window['name']]
-out = Path(__file__).resolve().parent
+out = ROOT/'results/lab_run06_diagnostics'
 columns = ['host_iso', 'host_epoch_s', 'host_elapsed_s', 'raw_adc', 'temperature_c',
            'density_kgm3', 'predicted_raw_mps', 'window', 'assumed_mps']
 live[columns].to_csv(out/'calibrated_raw_timeseries.csv', index=False)

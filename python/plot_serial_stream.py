@@ -30,7 +30,7 @@ def run(file,out):
     if not needed.issubset(df.columns):raise ValueError('Missing columns: '+str(needed-set(df.columns)))
     s=df[df.kind=='STREAM'].copy()
     s=s[pd.to_numeric(s.wind_mps,errors='coerce').notna()]
-    if not len(s):raise ValueError('No 200Hz STREAM rows. Use g/j after starting tools/logger_200hz.py')
+    if not len(s):raise ValueError('No 200Hz STREAM rows. Use g/j after starting python/log_serial.py')
     s.to_csv(out/'stream_numeric_200hz.csv',index=False)
     for phase in ('step','ramp'):
         part=s[s.phase==phase]
@@ -44,6 +44,6 @@ def run(file,out):
 if __name__=='__main__':
     ap=argparse.ArgumentParser()
     ap.add_argument('--input',type=Path,required=True)
-    ap.add_argument('--out',type=Path,default=Path('outputs/lab_200hz'))
+    ap.add_argument('--out',type=Path,default=Path('results/lab_200hz'))
     a=ap.parse_args()
     run(a.input,a.out)

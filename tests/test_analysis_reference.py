@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'python'))
-from analyze import reference_values
+from analyze_calibration_points import reference_values
 
 
 class ReferenceTests(unittest.TestCase):

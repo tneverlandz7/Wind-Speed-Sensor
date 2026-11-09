@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 from calibration_model import density, fit_model, predict, score, validate_reference_range
-from make_embedded_config import from_line
+from generate_calibration_header import from_line
 
 
 def read_csv(path, required):
@@ -203,8 +203,8 @@ def calibrate(sensor_path, reference_path, windows_path, out=None, *, ambient_pr
              'firmware_provenance_note': 'Version is user-supplied. Host checkout revision/source hashes do not establish what is flashed on the board.',
              'local_firmware_sources': [provenance(Path(__file__).resolve().parents[1]/path)
                                         for path in ('firmware/src/main.cpp', 'firmware/src/calibration_config.h',
-                                                     'firmware_Arduino/COMP0219_Stage1/COMP0219_Stage1.ino',
-                                                     'firmware_Arduino/COMP0219_Stage1/calibration_config.h')
+                                                     'firmware/arduino/wind_sensor/wind_sensor.ino',
+                                                     'firmware/arduino/wind_sensor/calibration_config.h')
                                         if (Path(__file__).resolve().parents[1]/path).exists()],
              'inputs': {name: provenance(path) for name, path in input_paths},
              'calibration': score(summary[cal_mask].reference_mps, summary[cal_mask].predicted_mps),

@@ -9,9 +9,9 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'python'))
-from calibrate_from_tunnel import calibrate
+from calibrate_sensor import calibrate
 from calibration_model import density
-from make_embedded_config import from_line
+from generate_calibration_header import from_line
 
 
 class AssumedCalibrationTests(unittest.TestCase):
@@ -89,7 +89,7 @@ class AssumedCalibrationTests(unittest.TestCase):
         original_sensor = self.sensor.read_bytes()
         original_windows = self.windows.read_bytes()
         out = self.root/'out'
-        script = Path(__file__).resolve().parents[1]/'python/calibrate_from_tunnel.py'
+        script = Path(__file__).resolve().parents[1]/'python/calibrate_sensor.py'
         args = [sys.executable, str(script), '--sensor', str(self.sensor), '--windows', str(self.windows),
                 '--assumed-speeds', str(self.speeds), '--out', str(out)]
         result = subprocess.run(args, capture_output=True, text=True)

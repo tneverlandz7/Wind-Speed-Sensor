@@ -1,0 +1,4 @@
+* text=auto eol=lf
+# Preserve experimental bytes: calibration provenance uses SHA-256 hashes.
+*.csv -text
+results/** -text

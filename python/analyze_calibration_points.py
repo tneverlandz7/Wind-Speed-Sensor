@@ -1,5 +1,5 @@
 """Fit ADC->wind model from POINT rows, validate, plot time series and errors.
-Data needs the format produced by logger.py. No mock data is used for real metrics.
+Data needs the format produced by log_serial.py. No mock data is used for real metrics.
 """
 import argparse,json,math,re
 from pathlib import Path
@@ -69,7 +69,7 @@ def main(file,out):
     out.mkdir(parents=True,exist_ok=True)
     df=pd.read_csv(file)
     needed={'kind','raw_line','host_elapsed_s','pressure_pa','raw_adc','temperature_c','phase'}
-    if not needed.issubset(set(df.columns)):raise ValueError('Input is not a logger.py CSV; missing '+str(needed-set(df.columns)))
+    if not needed.issubset(set(df.columns)):raise ValueError('Input is not a log_serial.py CSV; missing '+str(needed-set(df.columns)))
     z=baseline(df)
     sigma=baseline_sigma(df)
     points=extract_points(df)
@@ -126,5 +126,5 @@ def main(file,out):
     print('IMPORTANT: annotations are not synchronous pressure sensor readings. Do not report accurate latency/rise time without timing alignment.')
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--input',required=True);p.add_argument('--out',default='outputs/analysis')
+    p=argparse.ArgumentParser();p.add_argument('--input',required=True);p.add_argument('--out',default='results/analysis')
     args=p.parse_args();main(Path(args.input),Path(args.out))

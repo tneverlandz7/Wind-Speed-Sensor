@@ -17,7 +17,7 @@ struct NumericSerial {
     }
 } speedSerial;
 #define Serial speedSerial
-#include "../firmware_Arduino/COMP0219_SpeedOnly_Lab03/COMP0219_SpeedOnly_Lab03.ino"
+#include "../firmware/arduino/wind_sensor_stream_experimental/wind_sensor_stream_experimental.ino"
 #undef Serial
 
 int main() {

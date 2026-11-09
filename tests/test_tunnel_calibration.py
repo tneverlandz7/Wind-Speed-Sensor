@@ -10,8 +10,8 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'python'))
 from calibration_model import density, fit_model, predict
-from calibrate_from_tunnel import calibrate
-from make_embedded_config import from_line
+from calibrate_sensor import calibrate
+from generate_calibration_header import from_line
 
 
 class ModelTests(unittest.TestCase):
@@ -116,7 +116,7 @@ class TunnelTests(unittest.TestCase):
 
     def test_command_line_export_and_failed_rerun(self):
         out = self.root/'cli_out'
-        command = [sys.executable, str(Path(__file__).resolve().parents[1]/'python/calibrate_from_tunnel.py'),
+        command = [sys.executable, str(Path(__file__).resolve().parents[1]/'python/calibrate_sensor.py'),
                    '--sensor', str(self.sensor), '--reference', str(self.reference), '--windows', str(self.windows),
                    '--ambient-pressure-pa', '100000', '--reference-temperature-c', '20',
                    '--min-reference-mps', '1.9',

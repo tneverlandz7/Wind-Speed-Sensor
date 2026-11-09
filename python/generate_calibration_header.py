@@ -1,4 +1,4 @@
-"""Generate embedded firmware calibration headers from a *real* STM32 RESTORE_CMD export.
+"""Generate firmware headers from a saved calibration restore command.
 
 Not an estimator: all windspeed estimation remains on Nucleo at deployment.
 """
@@ -22,7 +22,7 @@ def from_line(line):
 
 def render(zero, sigma, sign, beta):
     return f'''#pragma once
-// GENERATED from a real tunnel calibration. Keep source logs in supplementary ZIP.
+// GENERATED from a saved calibration. Verify its reference source before deployment.
 // Recalibrate after mechanical changes (mounter/plate/load cell repositioning).
 #define COMP0219_AUTOSTART 1
 #define COMP0219_SAVED_ZERO_ADC {zero:.4f}f
@@ -40,7 +40,7 @@ def main():
     line = args.model_file.read_text(encoding='utf-8').strip()
     payload = render(*from_line(line))
     paths = [args.target_root/'firmware/src/calibration_config.h',
-             args.target_root/'firmware_Arduino/COMP0219_Stage1/calibration_config.h']
+             args.target_root/'firmware/arduino/wind_sensor/calibration_config.h']
     for path in paths:
         if not path.parent.is_dir():
             raise ValueError(f'Missing firmware directory: {path.parent}')

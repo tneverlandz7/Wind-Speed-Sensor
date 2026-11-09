@@ -32,14 +32,14 @@ def stats(reference, prediction, reference_sigma=None):
 
 def main():
     p=argparse.ArgumentParser()
-    p.add_argument('--sensor',type=Path,required=True,help='CSV logged by logger_200hz.py')
+    p.add_argument('--sensor',type=Path,required=True,help='CSV logged by log_serial.py')
     p.add_argument('--reference',type=Path,required=True,help='CSV from official Dwyer/Pitot recorder')
     p.add_argument('--ref-time-col',default='time_s')
     p.add_argument('--ref-speed-col',default='speed_mps')
     p.add_argument('--ref-sigma-col',default=None,help='Optional 1-sigma reference speed uncertainty in m/s')
     p.add_argument('--ref-time-offset-s',type=float,required=True,
                    help='Shift reference timestamp into sensor host_elapsed_s (must be measured/aligned)')
-    p.add_argument('--out',type=Path,default=Path('outputs/official_comparison'))
+    p.add_argument('--out',type=Path,default=Path('results/official_comparison'))
     a=p.parse_args()
     a.out.mkdir(parents=True,exist_ok=True)
     s=pd.read_csv(a.sensor)

@@ -7,5 +7,7 @@ flowchart LR
     E --> F
     F --> G[Baseline + filtering]
     G --> H[Wind-tunnel ADC-speed mapping]
-    H --> I[UART CSV logs]
-    I --> J[Python fits + PDF plots + uncertainty]
+    H --> I[UART numeric speed at 200 Hz]
+    F --> K[Raw readings and diagnostic records]
+    I --> J[Python recording and evaluation]
+    K --> L[Python offline calibration and plots]
