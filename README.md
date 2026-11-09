@@ -109,9 +109,6 @@ have not been established by these logs.
 | `lab_run03` | Wooden wind tunnel used for the earlier calibration | Recorded tunnel speeds from `data/T4_20261104_155058_giga_vdas.csv` | [outputs/lab_run03](outputs/lab_run03) |
 | `lab_run06` | Wind tunnel used for the final demonstration | Assumed window speeds; the tunnel reference recording was missing | [outputs/lab_run06_assumed](outputs/lab_run06_assumed) |
 
-For run03, `speed_6` and `speed_2` are calibration windows; `speed_3` is held out
-for validation. The saved validation estimate is about **4.674 m/s** against a
-measured reference mean of **2.926 m/s**, an error of **+1.748 m/s**.
 
 For run06, the assumed means are **10, 8 and 6 m/s** for calibration, with **4 m/s**
 held out. The original saved model predicts about **3.513 m/s** for that validation
